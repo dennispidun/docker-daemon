@@ -4,18 +4,18 @@ import { RequestHandler } from 'express';
 import { HttpException } from '@exceptions/HttpException';
 
 const getAllNestedErrors = (error: ValidationError) => {
-  if(error.constraints){
-    return Object.values(error.constraints)
+  if (error.constraints) {
+    return Object.values(error.constraints);
   }
-  return error.children.map(getAllNestedErrors).join(',')
-}
+  return error.children.map(getAllNestedErrors).join(',');
+};
 
 export const validationMiddleware = (
   type: any,
   value: string | 'body' | 'query' | 'params' = 'body',
-  skipMissingProperties: boolean = false,
-  whitelist: boolean = true,
-  forbidNonWhitelisted: boolean = true,
+  skipMissingProperties = false,
+  whitelist = true,
+  forbidNonWhitelisted = true,
 ): RequestHandler => {
   return (req, res, next) => {
     const obj = plainToClass(type, req[value]);
