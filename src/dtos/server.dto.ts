@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsNumber, IsString, Max, Min } from 'class-validator';
+import { IsNotEmpty, IsNumber, IsOptional, IsString, Max, Min } from 'class-validator';
 
 export class CreateServerDto {
   @IsString()
@@ -12,5 +12,6 @@ export class CreateServerDto {
   @Max(99999, { message: 'Memory limit must be at most 99999MB' })
   public memory: string;
 
+  @IsOptional()
   public port: string;
 }

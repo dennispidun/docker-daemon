@@ -45,7 +45,7 @@ class ServersService {
     const memory: number = Number.parseInt(server.memory || '1024');
 
     const resourcesUtilization = await this.resourcesService.getStats();
-    if (resourcesUtilization.usedMemory + memory > resourcesUtilization.maxMemory) {
+    if (resourcesUtilization.currentMemory + memory > resourcesUtilization.maxMemory) {
       throw new ResourceExhausted();
     }
 

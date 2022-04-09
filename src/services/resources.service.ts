@@ -10,8 +10,6 @@ class ResourcesService {
 
   async getStats(): Promise<ResourcesUtilization> {
     const info = await this.docker.info();
-    console.log(info);
-
     const totalMemory = (Math.floor(info['MemTotal'] / 1024 / 1024 / 1024) - 2) * 1024;
 
     const containers: Container[] = await this.docker.container.list({ all: true });
@@ -24,12 +22,12 @@ class ResourcesService {
     usedMemory = usedMemory / 1024 / 1024;
 
     return {
-      usedMemory,
+      currentMemory: usedMemory,
       maxMemory: totalMemory,
-      maxCpuCores: info['NCPU'],
+      cpuCores: info['NCPU'],
       maxDiskSpace: Number.parseInt(MAX_DISK_SPACE),
-      containers: info['Containers'],
-      containersRunning: info['ContainersRunning'],
+      maxGameServer: info['Containers'],
+      currentGameServer: info['ContainersRunning'],
       images: info['Images'],
     };
   }

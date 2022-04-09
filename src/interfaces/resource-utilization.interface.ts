@@ -1,9 +1,9 @@
 export interface ResourcesUtilization {
-  usedMemory: number;
+  currentMemory: number;
   maxMemory: number;
-  maxCpuCores: number;
+  cpuCores: number;
   maxDiskSpace: number;
-  containers: number;
-  containersRunning: number;
+  maxGameServer: number;
+  currentGameServer: number;
   images: number;
 }

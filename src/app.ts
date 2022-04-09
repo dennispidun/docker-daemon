@@ -10,9 +10,7 @@ import { CREDENTIALS, LOG_FORMAT, NODE_ENV, ORIGIN, PORT } from '@config';
 import errorMiddleware from '@middlewares/error.middleware';
 import { logger, stream } from '@utils/logger';
 import { Container } from 'typedi';
-
-import { SimpleIntervalJob, Task, ToadScheduler } from 'toad-scheduler';
-import axios from 'axios';
+import NodeService from '@services/node.service';
 
 class App {
   public app: express.Application;
@@ -71,31 +69,9 @@ class App {
     this.app.use(errorMiddleware);
   }
 
-  private initializeScheduler(interval: number, id: string) {
-    const scheduler = new ToadScheduler();
-    const task = new Task('simple task', () => {
-      axios
-        .put(`http://localhost:9090/api/nodes/${id}`, {
-          apiKey: 'secretKey',
-        })
-        .then();
-    });
-
-    const job1 = new SimpleIntervalJob({ seconds: interval, runImmediately: true }, task, 'id_1');
-    scheduler.addSimpleIntervalJob(job1);
-  }
-
   private async registerNode() {
-    const nodeReq = await axios.post(`http://localhost:9090/api/nodes`, {
-      apiKey: 'secretKey',
-      name: 'EU-WEST-2',
-      ip: '127.0.0.1',
-      cpuCores: 16,
-      maxMemory: 16000,
-      maxGameServer: 10,
-    });
-
-    this.initializeScheduler(nodeReq.data['timeoutInterval'], nodeReq.data['entity']['id']);
+    const nodeService = Container.get(NodeService);
+    await nodeService.registerNode('http://localhost:9090/api', 'secretKey');
   }
 }
 
