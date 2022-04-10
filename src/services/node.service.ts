@@ -7,7 +7,7 @@ import ResourcesService from '@services/resources.service';
 
 @Service()
 class NodeService {
-  db = new JSONdb('/home/coding/docker-daemon/nodeConfig.json');
+  db = new JSONdb('/Users/vwxqqlp/docker-daemon/nodeConfig.json');
 
   resourcesService: ResourcesService = Container.get(ResourcesService);
 
@@ -21,6 +21,8 @@ class NodeService {
         name: 'EU-WEST-1',
       };
     }
+
+    nodeConfig = { ...nodeConfig, ...resourcesUtilization };
 
     const nodeReq = await axios.post(`${server}/nodes`, {
       apiKey,
@@ -46,9 +48,7 @@ class NodeService {
       axios
         .put(`${server}/nodes/${node.id}`, {
           apiKey: 'secretKey',
-          currentGameServer: resourcesUtilization.currentGameServer,
-          currentMemory: resourcesUtilization.currentMemory,
-          maxGameServer: resourcesUtilization.maxGameServer,
+          ...resourcesUtilization,
         })
         .then();
     });

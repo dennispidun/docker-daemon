@@ -3,6 +3,7 @@ import { Docker } from 'node-docker-api';
 import { Container } from 'node-docker-api/lib/container';
 import { MAX_DISK_SPACE } from '@config';
 import { Service } from 'typedi';
+import si from 'systeminformation';
 
 @Service()
 class ResourcesService {
@@ -10,24 +11,35 @@ class ResourcesService {
 
   async getStats(): Promise<ResourcesUtilization> {
     const info = await this.docker.info();
-    const totalMemory = (Math.floor(info['MemTotal'] / 1024 / 1024 / 1024) - 2) * 1024;
+    const memory = await si.mem();
+    const cpu = await si.cpu();
+
+    const maxMemory = memory.total / 1024 / 1024;
 
     const containers: Container[] = await this.docker.container.list({ all: true });
-    let usedMemory = 0;
+    const docker = await si.dockerContainers(true);
+
+    console.log(await si.dockerInfo());
+
+    let currentMemory = memory.used;
     for (let container of containers) {
       container = await container.status();
-      usedMemory += container.data['HostConfig']['Memory'] || 0;
+      currentMemory += container.data['HostConfig']['Memory'] || 0;
     }
 
-    usedMemory = usedMemory / 1024 / 1024;
+    currentMemory = currentMemory / 1024 / 1024;
+
+    let runningContainers = docker.filter(c => {
+      return c.state == 'running';
+    });
 
     return {
-      currentMemory: usedMemory,
-      maxMemory: totalMemory,
-      cpuCores: info['NCPU'],
+      currentMemory,
+      maxMemory,
+      cpuCores: cpu.cores,
       maxDiskSpace: Number.parseInt(MAX_DISK_SPACE),
-      maxGameServer: info['Containers'],
-      currentGameServer: info['ContainersRunning'],
+      maxGameServer: docker.length,
+      currentGameServer: runningContainers.length,
       images: info['Images'],
     };
   }

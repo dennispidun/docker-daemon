@@ -38,6 +38,7 @@
     "routing-controllers-openapi": "^3.0.0",
     "simple-json-db": "^2.0.0",
     "swagger-ui-express": "^4.1.6",
+    "systeminformation": "^5.11.9",
     "toad-scheduler": "^1.6.0",
     "typedi": "^0.10.0",
     "winston": "^3.3.3",
