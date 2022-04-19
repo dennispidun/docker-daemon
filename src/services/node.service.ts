@@ -42,8 +42,10 @@ class NodeService {
 
   private initializeScheduler(server: string, interval: number, node: NodeConfiguration) {
     const scheduler = new ToadScheduler();
-    const task = new Task('simple task', async () => {
+    const task = new Task('Update Resource Usage', async () => {
       const resourcesUtilization = await this.resourcesService.getStats();
+
+      console.log(resourcesUtilization);
 
       axios
         .put(`${server}/nodes/${node.id}`, {

@@ -14,41 +14,49 @@ class ServersService {
 
   async getServers(): Promise<Server[]> {
     const container = await this.docker.container.list({ all: true, filters: { label: ['me.dpidun.game_server'] } });
+    console.log(container[0]);
     return container.map(
       c =>
         ({
-          id: c.id,
+          id: c.id.substring(0, 8),
           name: c.data['Names'][0].substring(1, c.data['Names'][0].length),
           ports: c.data['Ports'],
           status: c.data['State'].toUpperCase(),
+          image: c.data['Image'],
+          createdAt: new Date(c.data['Created'] * 1000).toJSON(),
         } as Server),
     );
   }
 
   async getServer(idOrName: string): Promise<Server> {
     const containers = await this.docker.container.list({ all: true, filters: { label: ['me.dpidun.game_server'] } });
-    const container = containers.find(c => c.id === idOrName || c.data['Names'][0].substring(1, c.data['Names'][0].length) === idOrName);
+    const container = containers.find(
+      c => c.id === idOrName || c.id.startsWith(idOrName) || c.data['Names'][0].substring(1, c.data['Names'][0].length) === idOrName,
+    );
 
     if (!container) {
       throw new ServerNotFound();
     }
 
     return {
-      id: container.id,
+      id: container.id.substring(0, 8),
       name: container.data['Names'][0].substring(1, container.data['Names'][0].length),
       ports: container.data['Ports'],
       status: container.data['State'].toUpperCase(),
+      image: container.data['Image'],
+      createdAt: container.data['Created'],
     } as Server;
   }
 
   async createServer(server: CreateServerDto) {
     const memory: number = Number.parseInt(server.memory || '1024');
 
+    console.log('test1');
     const resourcesUtilization = await this.resourcesService.getStats();
     if (resourcesUtilization.currentMemory + memory > resourcesUtilization.maxMemory) {
       throw new ResourceExhausted();
     }
-
+    console.log('test2');
     await this.docker.container
       .create({
         Image: 'nginx',
@@ -61,7 +69,11 @@ class ServersService {
           PortBindings: { '80/tcp': [{ HostIp: server.ip, HostPort: server.port }] },
         },
       })
-      .then(container => container.start())
+      .then(container => {
+        console.log('test3');
+        container.start();
+        console.log('test3');
+      })
       .catch(e => {
         throw new ServerNotCreated(e.json.message);
       });

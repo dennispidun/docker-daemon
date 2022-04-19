@@ -19,8 +19,6 @@ class ResourcesService {
     const containers: Container[] = await this.docker.container.list({ all: true });
     const docker = await si.dockerContainers(true);
 
-    console.log(await si.dockerInfo());
-
     let currentMemory = memory.used;
     for (let container of containers) {
       container = await container.status();
@@ -40,6 +38,8 @@ class ResourcesService {
       maxDiskSpace: Number.parseInt(MAX_DISK_SPACE),
       maxGameServer: docker.length,
       currentGameServer: runningContainers.length,
+      containersAll: docker.length,
+      containersRunning: runningContainers.length,
       images: info['Images'],
     };
   }

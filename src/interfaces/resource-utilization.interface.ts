@@ -5,5 +5,7 @@ export interface ResourcesUtilization {
   maxDiskSpace: number;
   maxGameServer: number;
   currentGameServer: number;
+  containersRunning: number;
+  containersAll: number;
   images: number;
 }
