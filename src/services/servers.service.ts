@@ -51,12 +51,11 @@ class ServersService {
   async createServer(server: CreateServerDto) {
     const memory: number = Number.parseInt(server.memory || '1024');
 
-    console.log('test1');
     const resourcesUtilization = await this.resourcesService.getStats();
     if (resourcesUtilization.currentMemory + memory > resourcesUtilization.maxMemory) {
       throw new ResourceExhausted();
     }
-    console.log('test2');
+
     await this.docker.container
       .create({
         Image: 'nginx',
@@ -70,9 +69,7 @@ class ServersService {
         },
       })
       .then(container => {
-        console.log('test3');
         container.start();
-        console.log('test3');
       })
       .catch(e => {
         throw new ServerNotCreated(e.json.message);

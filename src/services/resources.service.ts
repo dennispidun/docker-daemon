@@ -27,7 +27,7 @@ class ResourcesService {
 
     currentMemory = currentMemory / 1024 / 1024;
 
-    let runningContainers = docker.filter(c => {
+    const runningContainers = docker.filter(c => {
       return c.state == 'running';
     });
 
