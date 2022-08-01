@@ -1,11 +1,9 @@
 import 'reflect-metadata';
 import App from '@/app';
-import { IndexController } from '@controllers/index.controller';
-import { ServersController } from '@controllers/servers.controller';
 import validateEnv from '@utils/validateEnv';
-import { ResourcesController } from '@controllers/resources.controller';
+import { controllers } from '@controllers/index';
 
 validateEnv();
 
-const app = new App([IndexController, ServersController, ResourcesController]);
+const app = new App(controllers);
 app.listen();

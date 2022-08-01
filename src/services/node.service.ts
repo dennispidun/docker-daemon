@@ -14,6 +14,7 @@ class NodeService {
   public async registerNode(server: string, apiKey: string) {
     let nodeConfig: NodeConfiguration = this.db.get('node');
     const resourcesUtilization = await this.resourcesService.getStats();
+
     if (!nodeConfig) {
       nodeConfig = {
         ...resourcesUtilization,

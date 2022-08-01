@@ -49,8 +49,8 @@ class ServersService {
   }
 
   async createServer(server: CreateServerDto) {
+    console.log('Server: ', server);
     const memory: number = Number.parseInt(server.memory || '1024');
-
     const resourcesUtilization = await this.resourcesService.getStats();
     if (resourcesUtilization.currentMemory + memory > resourcesUtilization.maxMemory) {
       throw new ResourceExhausted();
