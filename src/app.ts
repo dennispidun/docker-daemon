@@ -14,7 +14,7 @@ import NodeService from '@services/node.service';
 import http from 'http';
 import swaggerUi from 'swagger-ui-express';
 
-import { spec } from './swagger';
+import { spec } from '@utils/swagger';
 
 class App {
   public app: express.Application;

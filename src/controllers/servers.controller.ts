@@ -11,8 +11,8 @@ export enum ServerAction {
   RESTART = 'RESTART',
 }
 
-@Controller('/server')
 @Service()
+@Controller('/server')
 export class ServersController {
   constructor(private service: ServersService) {}
 
