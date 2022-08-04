@@ -16,30 +16,31 @@ class ResourcesService {
 
     const maxMemory = memory.total / 1024 / 1024;
 
-    const containers: Container[] = await this.docker.container.list({ all: true });
-    const docker = await si.dockerContainers(true);
+    const gameServerContainer: Container[] = await this.docker.container.list({ all: true, filters: { label: ['me.dpidun.game_server'] } });
+    const allContainers = await si.dockerContainers(true);
 
     let currentMemory = memory.used;
-    for (let container of containers) {
-      container = await container.status();
-      currentMemory += container.data['HostConfig']['Memory'] || 0;
+    let runningGameservers = 0;
+
+    for (let gameServer of gameServerContainer) {
+      gameServer = await gameServer.status();
+      currentMemory += gameServer.data['HostConfig']['Memory'] || 0;
+      if (gameServer.data['State']['Status'] == 'running') {
+        runningGameservers++;
+      }
     }
 
     currentMemory = currentMemory / 1024 / 1024;
-
-    const runningContainers = docker.filter(c => {
-      return c.state == 'running';
-    });
 
     return {
       currentMemory,
       maxMemory,
       cpuCores: cpu.cores,
       maxDiskSpace: Number.parseInt(MAX_DISK_SPACE),
-      maxGameServer: docker.length,
-      currentGameServer: runningContainers.length,
-      containersAll: docker.length,
-      containersRunning: runningContainers.length,
+      maxGameServer: allContainers.length,
+      currentGameServer: runningGameservers,
+      containersAll: allContainers.length,
+      containersRunning: allContainers.filter(c => c.state === 'running').length,
       images: info['Images'],
     };
   }
