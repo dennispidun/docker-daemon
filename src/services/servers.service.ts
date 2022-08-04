@@ -1,6 +1,5 @@
 import { Server } from '@interfaces/server.interface';
-import { CreateServerDto } from '@/dtos/server.dto';
-import { ServerAction } from '@controllers/servers.controller';
+import { CreateServerDto, ServerAction } from '@/dtos/server.dto';
 import { Docker } from 'node-docker-api';
 import { HttpException } from '@exceptions/HttpException';
 import ResourcesService from '@services/resources.service';
@@ -14,7 +13,6 @@ class ServersService {
 
   async getServers(): Promise<Server[]> {
     const container = await this.docker.container.list({ all: true, filters: { label: ['me.dpidun.game_server'] } });
-    console.log(container[0]);
     return container.map(
       c =>
         ({
@@ -29,14 +27,7 @@ class ServersService {
   }
 
   async getServer(idOrName: string): Promise<Server> {
-    const containers = await this.docker.container.list({ all: true, filters: { label: ['me.dpidun.game_server'] } });
-    const container = containers.find(
-      c => c.id === idOrName || c.id.startsWith(idOrName) || c.data['Names'][0].substring(1, c.data['Names'][0].length) === idOrName,
-    );
-
-    if (!container) {
-      throw new ServerNotFound();
-    }
+    const container = await this.getGameServerContainerWithIdOrName(idOrName);
 
     return {
       id: container.id.substring(0, 8),
@@ -48,24 +39,36 @@ class ServersService {
     } as Server;
   }
 
+  private async getGameServerContainerWithIdOrName(idOrName: string) {
+    const containers = await this.docker.container.list({ all: true, filters: { label: ['me.dpidun.game_server'] } });
+    const container = containers.find(
+      c => c.id === idOrName || c.id.startsWith(idOrName) || c.data['Names'][0].substring(1, c.data['Names'][0].length) === idOrName,
+    );
+
+    if (!container) {
+      throw new ServerNotFound();
+    }
+    return container;
+  }
+
   async createServer(server: CreateServerDto) {
-    console.log('Server: ', server);
-    const memory: number = Number.parseInt(server.memory || '1024');
+    const memory: number = server.memory || 1024;
     const resourcesUtilization = await this.resourcesService.getStats();
     if (resourcesUtilization.currentMemory + memory > resourcesUtilization.maxMemory) {
       throw new ResourceExhausted();
     }
 
+    const hostPort = server.port <= 0 ? undefined : server.port;
     await this.docker.container
       .create({
-        Image: 'nginx',
+        Image: server.image,
         name: server.name,
         Labels: {
           'me.dpidun.game_server': '',
         },
         HostConfig: {
           Memory: memory * 1024 * 1024,
-          PortBindings: { '80/tcp': [{ HostIp: server.ip, HostPort: server.port }] },
+          PortBindings: { '80/tcp': [{ HostIp: server.ip, HostPort: hostPort }] },
         },
       })
       .then(container => {
@@ -77,10 +80,8 @@ class ServersService {
   }
 
   async runAction(idOrName: string, action: ServerAction) {
-    const containers = await this.docker.container.list({ all: true, filters: { label: ['me.dpidun.game_server'] } });
-    const foundServer = containers.find(c => c.id === idOrName || c.data['Names'][0].substring(1, c.data['Names'][0].length) === idOrName);
+    const container = await this.getGameServerContainerWithIdOrName(idOrName);
 
-    const container = this.docker.container.get(foundServer.id);
     if (action === ServerAction.STOP) {
       await container.stop();
     } else if (action === ServerAction.START) {

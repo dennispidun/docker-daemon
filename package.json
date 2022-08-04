@@ -15,7 +15,7 @@
     "deploy:prod": "npm run build && pm2 start ecosystem.config.js --only prod",
     "deploy:dev": "pm2 start ecosystem.config.js --only dev",
     "swagger:generate": "npm run build && node dist/utils/generateSwaggerDoc.js",
-    "codegen": "npm run swagger:generate && openapi --input ./swagger.json --output ./gen/client"
+    "codegen": "npm run swagger:generate && node dist/utils/generateAxiosClient.js"
   },
   "dependencies": {
     "axios": "^0.26.1",

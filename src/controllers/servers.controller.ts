@@ -1,15 +1,10 @@
 import { Body, Controller, Get, HttpCode, Param, Post, Put, QueryParam } from 'routing-controllers';
 
 import ServersService from '@services/servers.service';
-import { CreateServerDto } from '@dtos/server.dto';
+import { CreateServerDto, ServerAction } from '@dtos/server.dto';
 import { HttpException } from '@exceptions/HttpException';
 import { Service } from 'typedi';
-
-export enum ServerAction {
-  START = 'START',
-  STOP = 'STOP',
-  RESTART = 'RESTART',
-}
+import { OpenAPI } from 'routing-controllers-openapi';
 
 @Service()
 @Controller('/server')
@@ -34,7 +29,7 @@ export class ServersController {
   }
 
   @Put('/:idOrName')
-  async action(@QueryParam('action') action: ServerAction, @Param('idOrName') idOrName: string) {
+  async action(@QueryParam('action', { required: true }) action: ServerAction, @Param('idOrName') idOrName: string) {
     if (!ServerAction[action]) {
       throw new ActionNotValidException();
     }

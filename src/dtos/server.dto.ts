@@ -10,11 +10,17 @@ export class CreateServerDto {
   @IsNumber(undefined, { message: 'Memory limit must be a number in MB' })
   @Min(1, { message: 'Memory limit must be at least 1MB' })
   @Max(999999, { message: 'Memory limit must be at most 999999MB' })
-  public memory: string;
+  public memory: number;
 
   @IsOptional()
-  public port: string;
+  public port: number;
 
   @IsNotEmpty()
   public image: string;
+}
+
+export enum ServerAction {
+  START = 'START',
+  STOP = 'STOP',
+  RESTART = 'RESTART',
 }
